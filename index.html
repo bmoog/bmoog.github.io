@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Sales Dashboard - Ox Glass</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-surface-variant": "#45464d",
+            "surface-container-highest": "#e0e3e5",
+            "surface-container-lowest": "#ffffff",
+            "primary": "#000000",
+            "primary-container": "#001453",
+            "error": "#ba1a1a",
+            "surface": "#f7f9fb",
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f7f9fb;
+      color: #191c1e;
+      min-height: 100vh;
+    }
+
+    .primary-gradient {
+      background: linear-gradient(135deg, #000000 0%, #001453 100%);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c6c6cd;
+      border-radius: 10px;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .auto-toggle.active {
+      background-color: #d5e3fc;
+      color: #001453;
+      border-color: #001453;
+    }
+
+    canvas {
+      touch-action: none;
+    }
+
+    input[type="date"] {
+      color: #111827;
+      background-color: #f9fafb;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+
+<body class="bg-surface flex min-h-screen">
+
+  <aside class="h-screen w-72 fixed left-0 top-0 pt-24 bg-gray-50 flex flex-col p-4 z-20 border-r border-gray-200">
+    <nav class="flex-1 flex flex-col gap-2 mt-2">
+      <p class="px-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Main Menu</p>
+      
+      <a href="#" onclick="switchView('dashboard')" id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 bg-white text-gray-900 rounded-xl shadow-sm border border-gray-100 font-headline font-bold text-sm transition-all">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard
+      </a>
+      
+      <a href="#" onclick="switchView('jobs')" id="nav-jobs" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-gray-900 hover:bg-white rounded-xl font-headline font-bold text-sm transition-all">
+        <span class="material-symbols-outlined text-[20px]">work</span> Active Jobs
+      </a>
+    </nav>
+
+    <div class="mt-auto">
+      <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-gray-900 hover:bg-white rounded-xl font-headline font-bold text-sm transition-all">
+        <span class="material-symbols-outlined text-[20px]">settings</span> Settings
+      </a>
+    </div>
+  </aside>
+
+  <main class="flex-1 ml-72 min-h-screen flex flex-col relative">
+    <header
+      class="w-full sticky top-0 z-30 bg-[#f7f9fb]/95 backdrop-blur-sm flex items-center justify-between px-8 py-4 border-b border-surface-container-highest">
+      <div class="flex items-center gap-3">
+        <img src="./logo.png" alt="Ox Glass Logo" class="h-10 w-auto object-contain"
+          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U2ZThlYSIvPjwvc3ZnPg=='" />
+        <h1 class="font-headline text-2xl font-extrabold tracking-tighter text-gray-900 uppercase mt-1">Ox Glass</h1>
+      </div>
+      <div id="header-actions">
+        <button onclick="switchView('create')"
+          class="primary-gradient text-white px-6 py-2.5 rounded-md font-headline font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary-container/20 active:scale-95 duration-200">
+          <span class="material-symbols-outlined text-[20px]">add</span> New Quote
+        </button>
+      </div>
+    </header>
+
+    <div class="p-8 pb-32 flex-1">
+
+      <div id="view-dashboard" class="hidden">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
+          <div class="relative w-full lg:max-w-md">
+            <span class="material-symbols-outlined absolute left-4 top-3.5 text-on-surface-variant">search</span>
+            <input type="text" id="search-input" oninput="renderDashboard()"
+              placeholder="Search by quote #, homeowner, or address..."
+              class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-surface-container-highest bg-white focus:ring-2 focus:ring-primary shadow-sm text-sm font-medium transition-all" />
+          </div>
+          <div
+            class="flex overflow-x-auto bg-surface-container-highest p-1.5 rounded-xl w-full lg:w-auto hide-scrollbar"
+            id="status-filters"></div>
+        </div>
+        <div id="quotes-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-center">
+          <span class="material-symbols-outlined text-6xl text-surface-container-highest mb-4">inventory_2</span>
+          <h3 class="font-headline font-bold text-xl text-gray-900 mb-2">No quotes found</h3>
+          <p class="text-on-surface-variant text-sm max-w-sm mb-6">Create a new quote to get started, or adjust your
+            search filters.</p>
+          <button onclick="switchView('create')"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-900 px-6 py-2.5 rounded-lg font-headline font-bold text-sm transition-colors">Create
+            First Quote</button>
+        </div>
+      </div>
+
+      <div id="view-create" class="hidden max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-container-highest overflow-hidden">
+          <div class="bg-gray-50 p-6 border-b border-surface-container-highest flex justify-between items-center">
+            <h2 id="create-view-title" class="font-headline font-extrabold text-2xl text-gray-900">Create New Quote</h2>
+            <div class="text-right">
+              <label class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Quote Number</label>
+              <input type="text" id="cq-number" readonly
+                class="block w-40 text-right font-mono font-bold text-lg bg-transparent border-none p-0 focus:ring-0 text-gray-900"
+                value="">
+            </div>
+          </div>
+
+          <div class="p-8 space-y-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-bold text-gray-900 mb-2">Homeowner Name <span
+                    class="text-error">*</span></label>
+                <input type="text" id="cq-name"
+                  class="w-full rounded-lg border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-3"
+                  placeholder="e.g. Jane Doe">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-900 mb-2">Property Address</label>
+                <input type="text" id="cq-address"
+                  class="w-full rounded-lg border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-3"
+                  placeholder="123 Main St...">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-gray-900 mb-2">Internal Notes (Company Use Only)</label>
+                <textarea id="cq-notes" rows="2"
+                  class="w-full rounded-lg border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-3"
+                  placeholder="Gate code, dog warning, specific material requests..."></textarea>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-end mb-4">
+                <h3 class="font-headline font-bold text-lg border-b-2 border-primary pb-1 inline-block">Itemized Charges
+                </h3>
+                <span class="text-xs font-bold text-on-surface-variant bg-gray-100 px-3 py-1 rounded-full">Auto Calc:
+                  $26 / sqft</span>
+              </div>
+
+              <div class="bg-surface rounded-xl border border-surface-container-highest overflow-hidden">
+                <div
+                  class="grid grid-cols-12 gap-2 p-4 bg-surface-container-highest text-xs font-bold text-on-surface-variant uppercase tracking-wider text-center">
+                  <div class="col-span-4 text-left">Description</div>
+                  <div class="col-span-1">W (in)</div>
+                  <div class="col-span-1">H (in)</div>
+                  <div class="col-span-1">Qty</div>
+                  <div class="col-span-3">Price/Ea</div>
+                  <div class="col-span-2 text-right">Line Total</div>
+                </div>
+
+                <div id="items-container" class="divide-y divide-surface-container-highest">
+                </div>
+
+                <div
+                  class="grid grid-cols-12 gap-2 p-4 items-center bg-gray-50 border-t-2 border-surface-container-highest">
+                  <div class="col-span-6 font-bold text-gray-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">engineering</span>
+                    Installation Labor
+                  </div>
+                  <div class="col-span-1 font-bold text-center text-gray-500" id="labor-qty-display">0</div>
+                  <div class="col-span-3 flex items-center gap-1">
+                    <button type="button" onclick="toggleLaborAuto()" id="labor-auto-btn"
+                      class="auto-toggle active p-1.5 rounded border transition-colors flex-shrink-0" data-auto="true"
+                      title="Auto Calc: $120 per Unit">
+                      <span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
+                    </button>
+                    <div class="relative w-full">
+                      <span class="absolute left-2 top-2 text-on-surface-variant font-bold text-sm">$</span>
+                      <input type="number" id="labor-price" min="0" step="0.01" oninput="handleManualLabor()"
+                        class="w-full pl-6 pr-2 py-1.5 rounded-md border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm text-right font-medium"
+                        value="0.00">
+                    </div>
+                  </div>
+                  <div class="col-span-2 text-right font-bold text-gray-900" id="labor-line-total">$0.00</div>
+                </div>
+
+                <div
+                  class="p-4 bg-gray-100 flex justify-between items-center border-t border-surface-container-highest">
+                  <button onclick="addItemRow()"
+                    class="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-700 transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">add_circle</span> Add Item
+                  </button>
+                  <div class="text-right flex items-center gap-4">
+                    <span class="text-sm font-bold text-on-surface-variant uppercase tracking-widest">Total Price</span>
+                    <span id="cq-total-price" class="text-2xl font-extrabold text-gray-900 tracking-tight">$0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-headline font-bold text-lg border-b-2 border-primary pb-1 inline-block mb-4">Payment Terms
+              </h3>
+              <div class="bg-gray-50 p-6 rounded-xl border border-surface-container-highest">
+                <div class="space-y-4 mb-6">
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                      <label class="text-sm font-bold text-gray-900">Deposit Required</label>
+                      <label
+                        class="flex items-center gap-2 text-sm font-semibold bg-white px-3 py-1.5 rounded-lg border border-surface-container-highest cursor-pointer shadow-sm hover:bg-gray-50">
+                        <input type="checkbox" id="cq-half-down" checked onchange="handleHalfDownToggle()"
+                          class="rounded text-primary focus:ring-primary w-4 h-4">
+                        Half Down
+                      </label>
+                    </div>
+                    <div class="relative w-32">
+                      <span class="absolute left-3 top-2.5 text-on-surface-variant font-bold">$</span>
+                      <input type="number" id="cq-deposit" oninput="handleManualDeposit()" value="0.00"
+                        class="w-full pl-8 pr-3 py-2 text-right rounded-lg border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary font-bold">
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <label class="text-base font-extrabold text-gray-900">Balance Due <span
+                        class="text-xs font-normal text-on-surface-variant block">(Upon Completion)</span></label>
+                    <span id="cq-balance" class="text-xl font-extrabold text-error">$0.00</span>
+                  </div>
+                </div>
+                <div class="pt-4 border-t border-gray-200">
+                  <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">Accepted
+                    Payment Methods</label>
+                  <div class="flex flex-wrap gap-3">
+                    <label
+                      class="flex items-center gap-2 p-2 bg-white rounded-md border border-surface-container-highest cursor-pointer hover:bg-gray-50 pr-4">
+                      <input type="checkbox" checked value="Cash"
+                        class="payment-method rounded text-primary focus:ring-primary w-4 h-4">
+                      <span class="text-xs font-semibold">Cash</span>
+                    </label>
+                    <label
+                      class="flex items-center gap-2 p-2 bg-white rounded-md border border-surface-container-highest cursor-pointer hover:bg-gray-50 pr-4">
+                      <input type="checkbox" checked value="Check"
+                        class="payment-method rounded text-primary focus:ring-primary w-4 h-4">
+                      <span class="text-xs font-semibold">Check</span>
+                    </label>
+                    <label
+                      class="flex items-center gap-2 p-2 bg-white rounded-md border border-surface-container-highest cursor-pointer hover:bg-gray-50 pr-4">
+                      <input type="checkbox" checked value="Invoice"
+                        class="payment-method rounded text-primary focus:ring-primary w-4 h-4">
+                      <span class="text-xs font-semibold">Invoice</span>
+                    </label>
+                    <label
+                      class="flex items-center gap-2 p-2 bg-white rounded-md border border-surface-container-highest cursor-pointer hover:bg-gray-50 pr-4">
+                      <input type="checkbox" checked value="Venmo"
+                        class="payment-method rounded text-primary focus:ring-primary w-4 h-4">
+                      <span class="text-xs font-semibold">Venmo</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-6 border-t border-surface-container-highest">
+              <button onclick="cancelQuote()"
+                class="text-on-surface-variant hover:text-error hover:bg-error/10 px-6 py-3 rounded-lg font-bold text-sm transition-colors">Cancel</button>
+              <div class="flex gap-4">
+                <button onclick="saveQuote('Draft')"
+                  class="px-8 py-3 rounded-lg bg-surface-container-highest text-gray-900 font-headline font-bold text-sm transition-colors hover:bg-gray-300">Save
+                  as Draft</button>
+                <button onclick="saveAndPresent()"
+                  class="px-8 py-3 rounded-lg primary-gradient text-white font-headline font-bold text-sm transition-opacity hover:opacity-90 shadow-lg shadow-primary-container/20 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">send</span> Present
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-present" class="hidden max-w-5xl mx-auto pb-20">
+        <div class="flex justify-between items-center mb-6">
+          <button onclick="switchView('dashboard')"
+            class="flex items-center gap-2 text-on-surface-variant hover:text-gray-900 font-bold text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span> Back to Dashboard
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200 mb-8">
+          <div class="bg-gray-900 text-white p-10 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <img src="./logo.png" alt="Ox Glass Logo" class="h-16 w-auto object-contain bg-white rounded-lg p-2"
+                onerror="this.style.display='none'" />
+              <div>
+                <h1 class="font-headline text-3xl font-extrabold tracking-tighter uppercase">Ox Glass</h1>
+                <p class="text-gray-400 text-sm font-medium tracking-widest uppercase mt-1">Professional Installation
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <h2 class="text-3xl font-headline font-light text-gray-300 mb-1">Quote Presentation</h2>
+              <p id="pres-quote-number" class="text-lg font-mono font-bold text-white tracking-widest">#</p>
+            </div>
+          </div>
+
+          <div class="p-10 space-y-10">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-6">
+              <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Prepared For</p>
+                <h3 id="pres-name" class="font-headline font-extrabold text-3xl text-gray-900"></h3>
+                <p id="pres-address" class="text-gray-600 font-medium flex items-center gap-1 mt-1"></p>
+              </div>
+              <div
+                class="text-right bg-surface px-8 py-5 rounded-2xl border border-surface-container-highest shadow-sm">
+                <p
+                  class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 flex items-center gap-2 justify-end">
+                  <span class="material-symbols-outlined text-[16px]">grid_view</span> Total Scope
+                </p>
+                <p id="pres-units" class="text-3xl font-extrabold text-gray-900 tracking-tight"></p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-headline font-bold text-xl text-gray-900 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">engineering</span> Scope of Work
+              </h4>
+              <p class="text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-xl border border-gray-200 text-lg">
+                Ox Glass will replace all insulated glass units (IGUs) as detailed in the itemized breakdown below in a
+                professional and workmanlike manner, ensuring quality installation and proper sealing of all units.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-headline font-bold text-xl text-gray-900 mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">list_alt</span> Itemized Breakdown
+              </h4>
+              <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider font-bold">
+                      <th class="p-4 border-b border-gray-200 w-1/2">Description</th>
+                      <th class="p-4 border-b border-gray-200 text-center">Dimensions</th>
+                      <th class="p-4 border-b border-gray-200 text-center">Qty</th>
+                      <th class="p-4 border-b border-gray-200 text-right">Line Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pres-items" class="divide-y divide-gray-100 text-sm font-medium text-gray-800">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-gray-200">
+              <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h4 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Accepted Payment Methods</h4>
+                <div id="pres-methods" class="flex flex-wrap gap-3"></div>
+              </div>
+              <div class="space-y-4">
+                <div class="flex justify-between items-center text-lg font-bold text-gray-600">
+                  <span>Total Quote Amount</span>
+                  <span id="pres-total"></span>
+                </div>
+                <div class="flex justify-between items-center text-lg font-bold text-gray-600">
+                  <span>Deposit Required</span>
+                  <span id="pres-deposit"></span>
+                </div>
+                <div
+                  class="flex justify-between items-center text-2xl font-extrabold text-gray-900 pt-4 border-t border-gray-200">
+                  <span>Balance Due <span
+                      class="block text-xs font-medium text-gray-500 uppercase tracking-widest mt-1">Upon
+                      Completion</span></span>
+                  <span id="pres-balance" class="text-error"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="openContractView()"
+            class="px-8 py-4 rounded-xl primary-gradient text-white font-headline font-bold text-lg transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-primary-container/20 flex items-center gap-3">
+            Proceed to Contract Signing <span class="material-symbols-outlined text-[24px]">draw</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="view-contract" class="hidden max-w-5xl mx-auto pb-20">
+        <div class="flex justify-between items-center mb-6">
+          <button onclick="switchView('present')"
+            class="flex items-center gap-2 text-on-surface-variant hover:text-gray-900 font-bold text-sm transition-colors">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span> Back to Quote
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="col-span-1 space-y-6">
+            <div class="bg-white p-6 rounded-xl border border-surface-container-highest shadow-sm">
+              <h3 class="font-headline font-bold text-xl text-gray-900 mb-4 border-b pb-2">Customer Information</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 mb-1">Full Legal Name *</label>
+                  <input type="text" id="contract-name" oninput="updateContractText()"
+                    class="w-full rounded-md border-surface-container-highest shadow-sm text-sm p-2">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 mb-1">Home Address *</label>
+                  <input type="text" id="contract-address" oninput="updateContractText()"
+                    class="w-full rounded-md border-surface-container-highest shadow-sm text-sm p-2">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 mb-1">Phone Number *</label>
+                  <input type="tel" id="contract-phone" oninput="updateContractText()"
+                    class="w-full rounded-md border-surface-container-highest shadow-sm text-sm p-2">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 mb-1">Email *</label>
+                  <input type="email" id="contract-email" oninput="updateContractText()"
+                    class="w-full rounded-md border-surface-container-highest shadow-sm text-sm p-2">
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-surface-container-highest shadow-sm">
+              <h3 class="font-headline font-bold text-xl text-gray-900 mb-4 border-b pb-2">Company Representative</h3>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Ox Glass Representative *</label>
+                <input type="text" id="contract-rep" oninput="updateContractText()" placeholder="Type your name"
+                  class="w-full rounded-md border-surface-container-highest shadow-sm text-sm p-2">
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-surface-container-highest shadow-sm">
+              <h3 class="font-headline font-bold text-xl text-gray-900 mb-4 border-b pb-2">Signatures</h3>
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 mb-1">Customer Signature *</label>
+                  <div class="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50 relative">
+                    <canvas id="signature-pad" class="w-full h-32 cursor-crosshair touch-none"></canvas>
+                    <div id="sig-overlay"
+                      class="absolute inset-0 bg-green-500/10 flex items-center justify-center hidden pointer-events-none">
+                      <span class="material-symbols-outlined text-green-600 text-4xl">check_circle</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2 mt-2">
+                    <button onclick="clearSignature()"
+                      class="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded hover:bg-gray-200 transition-colors">Clear</button>
+                    <button onclick="confirmSignature()" id="btn-confirm-sig"
+                      class="flex-1 py-2 bg-primary text-white text-xs font-bold rounded hover:bg-gray-800 transition-colors">Confirm
+                      Signature</button>
+                  </div>
+                </div>
+
+                <button id="btn-sign-contract" onclick="signContract()" disabled
+                  class="w-full py-4 rounded-lg primary-gradient text-white font-headline font-bold text-base transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex justify-center items-center gap-2">
+                  <span class="material-symbols-outlined">contract</span> Complete & Sign Contract
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-1 lg:col-span-2">
+            <div id="contract-document-content" class="bg-white p-10 rounded-xl shadow-xl border border-gray-200 text-gray-800 text-sm leading-relaxed max-h-[800px] overflow-y-auto font-serif relative">
+				<div class="text-center mb-6">
+					<img src="./logo.png" alt="Ox Glass Logo" class="h-16 w-auto mx-auto object-contain" onerror="this.style.display='none'" />
+				</div>
+				<h1 class="text-2xl font-bold text-center mb-6 border-b pb-4">Glass Replacement Contract</h1>
+
+              <p class="mb-6 font-bold">Contract Date: <span id="doc-date"
+                  class="font-normal border-b border-gray-300 inline-block min-w-[150px]"></span></p>
+
+              <h2 class="text-lg font-bold mb-2">Parties Involved</h2>
+              <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <p class="font-bold underline mb-1">Service Provider:</p>
+                  <p>Ox Glass<br>305 S 850 E Suite 108A<br>Lehi, UT 84043<br>Phone: (385) 789-4974<br>Email:
+                    kim@ox-glass.com</p>
+                </div>
+                <div>
+                  <p class="font-bold underline mb-1">Customer:</p>
+                  <p>
+                    <span id="doc-name" class="font-bold text-blue-800 block min-h-[1.25rem]">[Customer Name]</span>
+                    <span id="doc-address" class="block min-h-[1.25rem]">[Address]</span>
+                    <span id="doc-phone" class="block min-h-[1.25rem]">[Phone]</span>
+                    <span id="doc-email" class="block min-h-[1.25rem]">[Email]</span>
+                  </p>
+                </div>
+              </div>
+
+              <h2 class="text-lg font-bold mb-2">Services</h2>
+              <p class="mb-6">Ox Glass agrees to provide the following window repair services: Removal of <span
+                  id="doc-units-1" class="font-bold"></span> old IGUs and installation of <span id="doc-units-2"
+                  class="font-bold"></span> new custom-fit IGUs. These services will be performed in a professional and
+                workmanlike manner in accordance with industry standards.</p>
+
+              <h2 class="text-lg font-bold mb-2">Payment Terms</h2>
+              <p class="mb-2 font-bold">Total Cost of Repair: <span id="doc-cost"
+                  class="font-normal bg-yellow-100 px-1"></span></p>
+              <p class="mb-2 font-bold">Payment Methods: <span id="doc-methods" class="font-normal italic"></span></p>
+              <p class="mb-6">The full Contract Price is due and payable in full at the time of installation, upon
+                completion of the Services. If payment is not made at the time of installation, a late fee of 5% of the
+                Contract Price may be applied, and the Client will be responsible for any collection costs, including
+                reasonable attorney fees.</p>
+
+              <h2 class="text-lg font-bold mb-2">Installation Schedule</h2>
+              <p class="mb-6">The Services are scheduled to be performed on or about 2 - 3 weeks from contract signing,
+                subject to weather conditions, material availability, or other unforeseen circumstances. Ox Glass will
+                notify the Client of any changes to the schedule as soon as possible.</p>
+
+              <h2 class="text-lg font-bold mb-2">Materials and Workmanship Warranty</h2>
+              <p class="mb-6">Ox Glass warrants that all materials used will be as specified and free from defects. The
+                Services are warranted for a period of one (1) year from the date of installation against defects in
+                workmanship. This warranty does not cover damage caused by misuse, neglect, or external forces (e.g.,
+                extreme weather or accidents). Any claims under this warranty must be submitted in writing to Ox Glass
+                within the warranty period.</p>
+
+              <h2 class="text-lg font-bold mb-2">Termination</h2>
+              <p class="mb-6">Either party may terminate this Agreement with written notice if the other party fails to
+                perform their obligations. If the Client terminates the Agreement without cause before installation, any
+                deposits paid may be non-refundable, and the Client may be responsible for costs incurred by Ox Glass
+                for materials or labor.</p>
+
+              <h2 class="text-lg font-bold mb-2">Liability</h2>
+              <p class="mb-6">Ox Glass is not responsible for damage to the Client's property caused by pre-existing
+                conditions or factors beyond Ox Glass's control.</p>
+
+              <h2 class="text-lg font-bold mb-2">Governing Law</h2>
+              <p class="mb-6">This Agreement shall be governed by and construed in accordance with the laws of
+                Utah/United States. Any disputes arising under this Agreement shall be resolved in the courts of United
+                States/Utah.</p>
+
+              <h2 class="text-lg font-bold mb-2">Entire Agreement</h2>
+              <p class="mb-6">This Agreement constitutes the entire understanding between the parties and supersedes any
+                prior agreements or understandings, written or oral. Any amendments to this Agreement must be made in
+                writing and signed by both parties.</p>
+
+              <h2 class="text-lg font-bold mb-2 mt-8 pt-8 border-t border-gray-300">Signatures</h2>
+              <p class="mb-8">By signing below, the Client and Ox Glass agree to be bound by the terms of this
+                Agreement.</p>
+
+              <div class="flex justify-between items-end mt-4 gap-8">
+                <div class="flex-1 border-b border-gray-400 pb-2 relative min-h-[80px]">
+                  <img id="doc-signature-preview" class="absolute bottom-6 left-0 h-16 object-contain" src=""
+                    alt="Customer Signature" style="display:none;" />
+                  <p class="font-bold absolute bottom-0 left-0" id="doc-sig-name">[Customer Name]</p>
+                </div>
+                <div class="flex-1 border-b border-gray-400 pb-2 relative min-h-[80px]">
+                  <p class="font-bold text-blue-800 italic text-xl absolute bottom-6 left-0" id="doc-sig-rep"></p>
+                  <p class="font-bold absolute bottom-0 left-0">Ox Glass Representative</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-jobs" class="hidden">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
+          <h2 class="font-headline font-extrabold text-3xl text-gray-900">Active Jobs</h2>
+          <div
+            class="flex overflow-x-auto bg-surface-container-highest p-1.5 rounded-xl w-full lg:w-auto hide-scrollbar"
+            id="jobs-filters"></div>
+        </div>
+
+        <div id="jobs-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
+        <div id="jobs-empty" class="hidden flex flex-col items-center justify-center py-20 text-center">
+          <span class="material-symbols-outlined text-6xl text-surface-container-highest mb-4">task</span>
+          <h3 class="font-headline font-bold text-xl text-gray-900 mb-2">No active jobs found</h3>
+          <p class="text-on-surface-variant text-sm max-w-sm mb-6">Signed quotes will automatically appear here as jobs,
+            or adjust your filter.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="modal-view-contract"
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h3 class="font-headline font-bold text-xl text-gray-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">description</span> Signed Contract
+        </h3>
+        <button onclick="closeModal('modal-view-contract')"
+          class="text-gray-500 hover:text-gray-900 transition-colors p-1">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+      <div id="modal-contract-body" class="p-8 overflow-y-auto flex-1 font-serif text-sm text-gray-800 leading-relaxed">
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-job-details"
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h3 class="font-headline font-bold text-xl text-gray-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">inventory</span> Job Details
+        </h3>
+        <button onclick="closeModal('modal-job-details')"
+          class="text-gray-500 hover:text-gray-900 transition-colors p-1">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1">
+        <div id="modal-job-glass-list" class="mb-6 border border-gray-200 rounded-lg overflow-hidden">
+        </div>
+        <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 space-y-3">
+          <div class="flex justify-between text-sm font-bold text-gray-600">
+            <span>Total Job Cost:</span>
+            <span id="mj-total" class="text-gray-900"></span>
+          </div>
+          <div class="flex justify-between text-sm font-bold text-gray-600">
+            <span>Paid To Date:</span>
+            <span id="mj-paid" class="text-green-600"></span>
+          </div>
+          <div class="flex justify-between text-lg font-extrabold text-gray-900 pt-3 border-t border-gray-200">
+            <span>Remaining Balance:</span>
+            <span id="mj-balance" class="text-error"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="modal-delete-job" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+	  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+	    <h3 class="font-headline font-bold text-xl text-gray-900 mb-2 text-error flex items-center gap-2">
+	      <span class="material-symbols-outlined">warning</span> Delete Job
+	    </h3>
+	    <p class="text-sm text-gray-600 mb-4">This action cannot be undone. To confirm, type the Quote Number (<span id="delete-job-id-display" class="font-bold"></span>) below:</p>
+	    <input type="text" id="delete-job-input" class="w-full rounded-md border-gray-300 shadow-sm focus:border-error focus:ring-error text-sm p-2 mb-4" oninput="validateJobDelete()">
+	    <div class="flex gap-3">
+	      <button onclick="closeModal('modal-delete-job')" class="flex-1 py-2 bg-gray-100 text-gray-900 rounded font-bold hover:bg-gray-200 transition-colors">Cancel</button>
+	      <button id="btn-confirm-delete-job" onclick="executeJobDelete()" disabled class="flex-1 py-2 bg-error text-white rounded font-bold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Delete</button>
+	    </div>
+	  </div>
+	</div>
+
+  <script>
+    // --- State Management ---
+    let quotes = JSON.parse(localStorage.getItem('ox_glass_quotes')) || [];
+    let currentFilter = 'All';
+    let currentJobFilter = 'All Jobs';
+    let editingQuoteId = null;
+    let presentationQuoteId = null;
+
+    const filters = ['All', 'Drafts', 'Presented', 'Signed', 'Deprecated'];
+    const jobFilters = ['All Jobs', 'Signed', 'Ordered', 'Scheduled', 'Finished'];
+
+    const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    function init() {
+      renderFilters();
+      renderJobFilters();
+      switchView('dashboard');
+      initSignaturePad();
+    }
+
+	function switchView(viewName) {
+      // Hide all views
+      ['view-dashboard', 'view-create', 'view-present', 'view-contract', 'view-jobs'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById('header-actions').classList.add('hidden');
+      
+      // Reset sidebar styling to inactive state
+      const inactiveClass = "flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-gray-900 hover:bg-white rounded-xl font-headline font-bold text-sm transition-all";
+      document.getElementById('nav-dashboard').className = inactiveClass;
+      document.getElementById('nav-jobs').className = inactiveClass;
+      
+      window.scrollTo(0,0);
+
+      // Define active state styling
+      const activeClass = "flex items-center gap-3 px-4 py-3 bg-white text-gray-900 rounded-xl shadow-sm border border-gray-100 font-headline font-bold text-sm transition-all";
+
+      if(viewName === 'dashboard') {
+        document.getElementById('view-dashboard').classList.remove('hidden');
+        document.getElementById('header-actions').classList.remove('hidden');
+        document.getElementById('nav-dashboard').className = activeClass;
+        editingQuoteId = null;
+        renderDashboard();
+      } else if(viewName === 'create') {
+        document.getElementById('view-create').classList.remove('hidden');
+        if(!editingQuoteId) resetForm();
+      } else if(viewName === 'present') {
+        document.getElementById('view-present').classList.remove('hidden');
+      } else if(viewName === 'contract') {
+        document.getElementById('view-contract').classList.remove('hidden');
+        resizeCanvas();
+      } else if(viewName === 'jobs') {
+        document.getElementById('view-jobs').classList.remove('hidden');
+        document.getElementById('nav-jobs').className = activeClass;
+        renderJobs();
+      }
+    }
+    // --- Dashboard Logic ---
+    function renderFilters() {
+      const container = document.getElementById('status-filters');
+      container.innerHTML = filters.map(f => `
+        <button onclick="setFilter('${f}')" 
+                class="px-6 py-2.5 rounded-lg text-sm whitespace-nowrap transition-colors ${currentFilter === f ? 'bg-white shadow-sm font-extrabold text-gray-900' : 'text-on-surface-variant hover:text-gray-900 font-semibold'
+        }">
+          ${f}
+        </button>
+      `).join('');
+    }
+
+    function setFilter(filter) { currentFilter = filter; renderFilters(); renderDashboard(); }
+
+    function renderDashboard() {
+      const grid = document.getElementById('quotes-grid');
+      const emptyState = document.getElementById('empty-state');
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+      let filtered = quotes.filter(q => {
+		// Hide job statuses from the quote dashboard
+		const jobStatuses = ['Signed', 'Ordered', 'Scheduled', 'Finished'];
+		if (jobStatuses.includes(q.status)) return false;
+		
+		const matchesFilter = currentFilter === 'All' || q.status.toLowerCase() === currentFilter.toLowerCase().replace('s', ''); 
+		if (!matchesFilter && currentFilter !== 'All' && !(currentFilter === 'Drafts' && q.status === 'Draft')) return false;
+        const matchesSearch = q.id.toLowerCase().includes(searchTerm) ||
+          q.homeowner.toLowerCase().includes(searchTerm) ||
+          (q.address && q.address.toLowerCase().includes(searchTerm));
+        return matchesSearch;
+      });
+
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        grid.innerHTML = filtered.map(q => createQuoteCard(q)).join('');
+      }
+    }
+
+    function createQuoteCard(quote) {
+      const statusStyles = {
+        'Draft': 'bg-surface-container-highest text-on-surface-variant',
+        'Presented': 'bg-[#d5e3fc] text-[#0d1c2e]',
+        'Signed': 'bg-green-100 text-green-800',
+        'Ordered': 'bg-blue-100 text-blue-800',
+        'Scheduled': 'bg-purple-100 text-purple-800',
+        'Finished': 'bg-gray-800 text-white',
+        'Deprecated': 'bg-red-100 text-red-800'
+      };
+      const statusClass = statusStyles[quote.status] || statusStyles['Draft'];
+      const iguCount = quote.items.reduce((sum, item) => sum + parseInt(item.qty || 0), 0);
+      const displayBalance = quote.status === 'Signed' || quote.status === 'Ordered' || quote.status === 'Scheduled' || quote.status === 'Finished'
+        ? quote.total - (quote.amountPaid || 0) : quote.balance;
+
+      return `
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-highest hover:shadow-md transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <span class="text-xs font-bold text-on-surface-variant font-mono tracking-wider">${quote.id}</span>
+                <h4 class="font-headline font-extrabold text-2xl text-gray-900 mt-1">${quote.homeowner}</h4>
+                ${quote.address ? `<p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> ${quote.address}</p>` : ''}
+              </div>
+              <span class="px-4 py-1.5 rounded-full ${statusClass} text-[11px] font-bold uppercase tracking-widest">${quote.status}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-y-6 gap-x-4 bg-surface p-4 rounded-xl mb-6">
+              <div>
+                <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest mb-1">Items/IGUs</p>
+                <p class="font-semibold text-gray-900 text-sm">${iguCount} Units</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest mb-1">Created</p>
+                <p class="font-semibold text-gray-900 text-sm">${formatDate(quote.date)}</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest mb-1">Total Cost</p>
+                <p class="font-bold text-primary text-xl tracking-tight">${formatCurrency(quote.total)}</p>
+              </div>
+              <div>
+                 <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest mb-1">Balance</p>
+                <p class="font-bold text-error text-xl tracking-tight">${formatCurrency(displayBalance)}</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-surface-container-highest">
+            <button onclick="deleteQuote('${quote.id}')" class="text-error hover:bg-error/10 px-4 py-2.5 rounded-lg font-bold text-sm transition-colors flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+            <div class="flex gap-3">
+              <button onclick="editQuote('${quote.id}')" class="px-6 py-2.5 rounded-lg bg-gray-100 text-gray-900 font-headline font-bold text-sm transition-colors hover:bg-gray-200">Edit</button>
+              <button onclick="presentQuote('${quote.id}')" class="px-6 py-2.5 rounded-lg primary-gradient text-white font-headline font-bold text-sm transition-opacity hover:opacity-90 shadow-md">Present</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function deleteQuote(id) {
+      if (confirm('Delete quote?')) {
+        quotes = quotes.filter(q => q.id !== id);
+        localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+        renderDashboard();
+        if (document.getElementById('view-jobs').classList.contains('hidden') === false) renderJobs();
+      }
+    }
+
+    // --- Create/Edit Logic ---
+    function resetForm() {
+      document.getElementById('create-view-title').innerText = "Create New Quote";
+      const year = new Date().getFullYear();
+      let uniqueId = '';
+      let isUnique = false;
+      while (!isUnique) {
+        const rand = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+        uniqueId = `UT-${year}-${rand}`;
+        if (!quotes.find(q => q.id === uniqueId)) isUnique = true;
+      }
+      document.getElementById('cq-number').value = uniqueId;
+      document.getElementById('cq-name').value = '';
+      document.getElementById('cq-address').value = '';
+      document.getElementById('cq-notes').value = '';
+      document.getElementById('cq-deposit').value = '0.00';
+      document.getElementById('cq-half-down').checked = true;
+      document.querySelectorAll('.payment-method').forEach(cb => cb.checked = true);
+      document.getElementById('items-container').innerHTML = '';
+
+      const laborAutoBtn = document.getElementById('labor-auto-btn');
+      laborAutoBtn.setAttribute('data-auto', 'true');
+      laborAutoBtn.className = "auto-toggle active p-1.5 rounded border transition-colors flex-shrink-0";
+      document.getElementById('labor-price').value = '0.00';
+
+      addItemRow();
+      calculateTotals();
+    }
+
+    function editQuote(id) {
+      const q = quotes.find(q => q.id === id);
+      if (!q) return;
+      editingQuoteId = id;
+      document.getElementById('create-view-title').innerText = "Edit Quote";
+      document.getElementById('cq-number').value = q.id;
+      document.getElementById('cq-name').value = q.homeowner;
+      document.getElementById('cq-address').value = q.address || '';
+      document.getElementById('cq-notes').value = q.notes || '';
+
+      document.getElementById('items-container').innerHTML = '';
+      if (q.items && q.items.length > 0) {
+        q.items.forEach(item => addItemRow(item));
+      } else { addItemRow(); }
+
+      const labor = q.labor || { isAuto: true, price: 0 };
+      const laborAutoBtn = document.getElementById('labor-auto-btn');
+      laborAutoBtn.setAttribute('data-auto', labor.isAuto);
+      if (labor.isAuto) laborAutoBtn.className = "auto-toggle active p-1.5 rounded border transition-colors flex-shrink-0";
+      else laborAutoBtn.className = "auto-toggle bg-white border border-surface-container-highest text-on-surface-variant p-1.5 rounded transition-colors flex-shrink-0";
+
+      document.getElementById('labor-price').value = labor.price.toFixed(2);
+      document.getElementById('cq-deposit').value = q.deposit.toFixed(2);
+      const total = q.total;
+      document.getElementById('cq-half-down').checked = (total > 0 && Math.abs((total / 2) - q.deposit) < 0.01);
+
+      document.querySelectorAll('.payment-method').forEach(cb => cb.checked = q.paymentMethods.includes(cb.value));
+
+      switchView('create');
+      calculateTotals();
+    }
+
+    function addItemRow(existingData = null) {
+      const container = document.getElementById('items-container');
+      const rowId = 'row-' + Date.now() + Math.floor(Math.random() * 1000);
+      const desc = existingData ? existingData.description : '';
+      const w = existingData && existingData.w ? existingData.w : '';
+      const h = existingData && existingData.h ? existingData.h : '';
+      const qty = existingData ? existingData.qty : 1;
+      const price = existingData ? existingData.price.toFixed(2) : '0.00';
+      const isAuto = existingData ? (existingData.autoCalc !== false) : true;
+      const autoClass = isAuto ? 'active' : 'bg-white border-surface-container-highest text-on-surface-variant';
+
+      const rowHtml = `
+        <div id="${rowId}" class="item-row grid grid-cols-12 gap-2 p-3 items-center bg-white hover:bg-gray-50 transition-colors">
+          <div class="col-span-4"><input type="text" class="item-desc w-full rounded-md border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-2" placeholder="Item description..." value="${desc}"></div>
+          <div class="col-span-1"><input type="number" min="0" oninput="handleDimensionChange('${rowId}')" class="item-w w-full rounded-md border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-2 text-center" placeholder="W" value="${w}"></div>
+          <div class="col-span-1"><input type="number" min="0" oninput="handleDimensionChange('${rowId}')" class="item-h w-full rounded-md border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-2 text-center" placeholder="H" value="${h}"></div>
+          <div class="col-span-1"><input type="number" min="1" oninput="calculateTotals()" class="item-qty w-full rounded-md border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm p-2 text-center" value="${qty}"></div>
+          <div class="col-span-3 flex items-center gap-1">
+            <button type="button" onclick="toggleAutoCalc('${rowId}')" class="auto-toggle ${autoClass} p-1.5 rounded border transition-colors flex-shrink-0" data-auto="${isAuto}"><span class="material-symbols-outlined text-[16px]">auto_fix_high</span></button>
+            <div class="relative w-full"><span class="absolute left-2 top-2 text-on-surface-variant font-bold text-sm">$</span><input type="number" min="0" step="0.01" oninput="handleManualPrice('${rowId}')" class="item-price w-full pl-6 pr-2 py-1.5 rounded-md border-surface-container-highest shadow-sm focus:border-primary focus:ring-primary text-sm text-right font-medium" value="${price}"></div>
+          </div>
+          <div class="col-span-2 flex justify-end items-center gap-3">
+            <span class="item-line-total font-bold text-gray-900">$0.00</span>
+            <button onclick="document.getElementById('${rowId}').remove(); calculateTotals();" class="text-on-surface-variant hover:text-error transition-colors p-1"><span class="material-symbols-outlined text-[18px]">close</span></button>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', rowHtml);
+      if (existingData) calculateTotals();
+    }
+
+    const PRICE_PER_SQFT = 26;
+    const PRICE_PER_LABOR_UNIT = 120;
+
+    function handleDimensionChange(rowId) {
+      const row = document.getElementById(rowId);
+      const autoBtn = row.querySelector('.auto-toggle');
+      if (autoBtn.getAttribute('data-auto') === 'true') {
+        const w = parseFloat(row.querySelector('.item-w').value) || 0;
+        const h = parseFloat(row.querySelector('.item-h').value) || 0;
+        const sqft = (w * h) / 144;
+        row.querySelector('.item-price').value = (sqft * PRICE_PER_SQFT).toFixed(2);
+      }
+      calculateTotals();
+    }
+
+    function toggleAutoCalc(rowId) {
+      const row = document.getElementById(rowId);
+      const autoBtn = row.querySelector('.auto-toggle');
+      const isAuto = autoBtn.getAttribute('data-auto') === 'true';
+      if (isAuto) {
+        autoBtn.setAttribute('data-auto', 'false'); autoBtn.className = "auto-toggle bg-white border border-surface-container-highest text-on-surface-variant p-1.5 rounded transition-colors flex-shrink-0";
+      } else {
+        autoBtn.setAttribute('data-auto', 'true'); autoBtn.className = "auto-toggle active p-1.5 rounded border transition-colors flex-shrink-0";
+        handleDimensionChange(rowId);
+      }
+    }
+
+    function handleManualPrice(rowId) {
+      const row = document.getElementById(rowId);
+      const autoBtn = row.querySelector('.auto-toggle');
+      if (autoBtn.getAttribute('data-auto') === 'true') {
+        autoBtn.setAttribute('data-auto', 'false'); autoBtn.className = "auto-toggle bg-white border border-surface-container-highest text-on-surface-variant p-1.5 rounded transition-colors flex-shrink-0";
+      }
+      calculateTotals();
+    }
+
+    function toggleLaborAuto() {
+      const autoBtn = document.getElementById('labor-auto-btn');
+      const isAuto = autoBtn.getAttribute('data-auto') === 'true';
+      if (isAuto) { autoBtn.setAttribute('data-auto', 'false'); autoBtn.className = "auto-toggle bg-white border border-surface-container-highest text-on-surface-variant p-1.5 rounded transition-colors flex-shrink-0"; }
+      else { autoBtn.setAttribute('data-auto', 'true'); autoBtn.className = "auto-toggle active p-1.5 rounded border transition-colors flex-shrink-0"; }
+      calculateTotals();
+    }
+
+    function handleManualLabor() {
+      const autoBtn = document.getElementById('labor-auto-btn');
+      if (autoBtn.getAttribute('data-auto') === 'true') { autoBtn.setAttribute('data-auto', 'false'); autoBtn.className = "auto-toggle bg-white border border-surface-container-highest text-on-surface-variant p-1.5 rounded transition-colors flex-shrink-0"; }
+      calculateTotals();
+    }
+
+    function handleHalfDownToggle() { calculateTotals(); }
+    function handleManualDeposit() { document.getElementById('cq-half-down').checked = false; calculateTotals(); }
+
+    function calculateTotals() {
+      let grandTotal = 0; let totalQty = 0;
+      const rows = document.querySelectorAll('.item-row');
+      rows.forEach(row => {
+        const qty = parseInt(row.querySelector('.item-qty').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const lineTotal = qty * price;
+        totalQty += qty; grandTotal += lineTotal;
+        row.querySelector('.item-line-total').textContent = formatCurrency(lineTotal);
+      });
+
+      document.getElementById('labor-qty-display').innerText = totalQty;
+      const laborAutoBtn = document.getElementById('labor-auto-btn');
+      const laborInput = document.getElementById('labor-price');
+      let laborTotal = 0;
+      if (laborAutoBtn.getAttribute('data-auto') === 'true') {
+        laborTotal = totalQty * PRICE_PER_LABOR_UNIT;
+        laborInput.value = laborTotal.toFixed(2);
+      } else { laborTotal = parseFloat(laborInput.value) || 0; }
+
+      document.getElementById('labor-line-total').textContent = formatCurrency(laborTotal);
+      grandTotal += laborTotal;
+
+      const halfDownCheckbox = document.getElementById('cq-half-down');
+      const depositInput = document.getElementById('cq-deposit');
+      if (halfDownCheckbox.checked) depositInput.value = (grandTotal / 2).toFixed(2);
+
+      const deposit = parseFloat(depositInput.value) || 0;
+      const balance = grandTotal - deposit;
+
+      document.getElementById('cq-total-price').textContent = formatCurrency(grandTotal);
+      document.getElementById('cq-balance').textContent = formatCurrency(balance < 0 ? 0 : balance);
+    }
+
+    function cancelQuote() { switchView('dashboard'); }
+
+    function saveQuote(status) {
+      const id = document.getElementById('cq-number').value;
+      const homeowner = document.getElementById('cq-name').value.trim();
+      if (!homeowner) { alert("Homeowner Name is required."); return null; }
+
+      const items = []; let totalQty = 0;
+      document.querySelectorAll('.item-row').forEach(row => {
+        const desc = row.querySelector('.item-desc').value.trim();
+        if (desc) {
+          const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+          totalQty += qty;
+          items.push({
+            description: desc, w: row.querySelector('.item-w').value.trim(), h: row.querySelector('.item-h').value.trim(),
+            qty: qty, price: parseFloat(row.querySelector('.item-price').value) || 0,
+            autoCalc: row.querySelector('.auto-toggle').getAttribute('data-auto') === 'true'
+          });
+        }
+      });
+      if (items.length === 0) { alert("Please add at least one item description."); return null; }
+
+      const isLaborAuto = document.getElementById('labor-auto-btn').getAttribute('data-auto') === 'true';
+      const laborPrice = parseFloat(document.getElementById('labor-price').value) || 0;
+      const labor = { isAuto: isLaborAuto, price: laborPrice };
+
+      const paymentMethods = Array.from(document.querySelectorAll('.payment-method:checked')).map(cb => cb.value);
+      const itemsTotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0);
+      const total = itemsTotal + laborPrice;
+      const deposit = parseFloat(document.getElementById('cq-deposit').value) || 0;
+
+      const updatedQuote = {
+        id, homeowner, address: document.getElementById('cq-address').value.trim(),
+        notes: document.getElementById('cq-notes').value.trim(),
+        items, labor, total, deposit, balance: total - deposit,
+        paymentMethods, status, date: new Date().toISOString(),
+        contractDetails: null, scheduleDate: null, amountPaid: 0
+      };
+
+      if (editingQuoteId) {
+        const index = quotes.findIndex(q => q.id === editingQuoteId);
+        if (index > -1) {
+          updatedQuote.date = quotes[index].date;
+          updatedQuote.contractDetails = quotes[index].contractDetails;
+          updatedQuote.scheduleDate = quotes[index].scheduleDate;
+          updatedQuote.amountPaid = quotes[index].amountPaid || 0;
+          quotes[index] = updatedQuote;
+        }
+      } else { quotes.push(updatedQuote); }
+
+      localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+      editingQuoteId = null;
+      if (status === 'Draft') switchView('dashboard');
+      return updatedQuote;
+    }
+
+    function saveAndPresent() {
+      const saved = saveQuote('Presented');
+      if (saved) presentQuote(saved.id);
+    }
+
+    // --- Presentation Logic ---
+    function presentQuote(id) {
+      const q = quotes.find(q => q.id === id);
+      if (!q) return;
+      presentationQuoteId = id;
+
+      if (q.status === 'Draft') { q.status = 'Presented'; localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes)); }
+
+      document.getElementById('pres-quote-number').innerText = q.id;
+      document.getElementById('pres-name').innerText = q.homeowner;
+      document.getElementById('pres-address').innerHTML = q.address ? `<span class="material-symbols-outlined text-[16px]">location_on</span> ${q.address}` : '';
+
+      const totalUnits = q.items.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('pres-units').innerText = `${totalUnits} Unit${totalUnits > 1 ? 's' : ''}`;
+
+      const tbody = document.getElementById('pres-items');
+      let tableHtml = q.items.map(item => {
+        const dimText = (item.w && item.h) ? `${item.w}" x ${item.h}"` : 'N/A';
+        return `
+          <tr><td class="p-4 border-b border-gray-100">${item.description}</td><td class="p-4 border-b border-gray-100 text-center text-gray-500">${dimText}</td><td class="p-4 border-b border-gray-100 text-center font-bold">${item.qty}</td><td class="p-4 border-b border-gray-100 text-right font-bold text-gray-900">${formatCurrency(item.qty * item.price)}</td></tr>
+        `;
+      }).join('');
+
+      if (q.labor) {
+        tableHtml += `
+          <tr class="bg-gray-50"><td class="p-4 border-b border-gray-100 font-bold text-gray-800"><span class="material-symbols-outlined text-[16px] align-middle mr-1 text-primary">engineering</span> Installation Labor</td><td class="p-4 border-b border-gray-100 text-center text-gray-500">-</td><td class="p-4 border-b border-gray-100 text-center font-bold text-gray-500">-</td><td class="p-4 border-b border-gray-100 text-right font-bold text-gray-900">${formatCurrency(q.labor.price)}</td></tr>
+        `;
+      }
+      tbody.innerHTML = tableHtml;
+
+      const methodsContainer = document.getElementById('pres-methods');
+      if (q.paymentMethods && q.paymentMethods.length > 0) {
+        methodsContainer.innerHTML = q.paymentMethods.map(m => `<span class="px-4 py-2 bg-white rounded-lg border border-gray-200 text-sm font-bold text-gray-700 shadow-sm flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-green-600">check_circle</span> ${m}</span>`).join('');
+      } else { methodsContainer.innerHTML = '<span class="text-gray-500 italic">No specific methods defined.</span>'; }
+
+      document.getElementById('pres-total').innerText = formatCurrency(q.total);
+      document.getElementById('pres-deposit').innerText = formatCurrency(q.deposit);
+      document.getElementById('pres-balance').innerText = formatCurrency(q.balance);
+
+      switchView('present');
+    }
+
+    // --- Contract Signing Logic ---
+    let signatureConfirmed = false;
+    let sigPad, sigCtx, isDrawing = false;
+
+	function openContractView() {
+      const q = quotes.find(q => q.id === presentationQuoteId);
+      if(!q) {
+        alert("Error: Quote data not found.");
+        return; 
+      }
+
+      // Safe helper function to avoid null crashes if HTML is missing
+      const safeSetVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+      const safeSetText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
+
+      safeSetVal('contract-name', q.homeowner || '');
+      safeSetVal('contract-address', q.address || '');
+      safeSetVal('contract-phone', '');
+      safeSetVal('contract-email', '');
+      safeSetVal('contract-rep', '');
+
+      const today = new Date().toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
+      safeSetText('doc-date', today);
+      
+      const units = (q.items || []).reduce((sum, item) => sum + item.qty, 0);
+      safeSetText('doc-units-1', units);
+      safeSetText('doc-units-2', units);
+      
+      safeSetText('doc-cost', formatCurrency(q.total || 0));
+      
+      // Protects against older quotes that don't have paymentMethods
+      safeSetText('doc-methods', (q.paymentMethods || []).join(', '));
+
+      // CRITICAL FIX: Open the view FIRST so the canvas has physical dimensions before manipulating it
+      switchView('contract');
+      
+      try {
+        clearSignature();
+        updateContractText();
+      } catch(e) {
+        console.warn("Recovered from contract setup error:", e);
+      }
+    }
+
+    function updateContractText() {
+      const safeSetText = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
+      const safeGetVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+      const name = safeGetVal('contract-name') || '[Customer Name]';
+      const rep = safeGetVal('contract-rep') || '';
+
+      safeSetText('doc-name', name);
+      safeSetText('doc-address', safeGetVal('contract-address') || '[Address]');
+      safeSetText('doc-phone', safeGetVal('contract-phone') || '[Phone]');
+      safeSetText('doc-email', safeGetVal('contract-email') || '[Email]');
+      safeSetText('doc-rep', rep);
+      safeSetText('doc-sig-name', name);
+      safeSetText('doc-sig-rep', rep);
+      
+      validateContract();
+    }
+
+    function updateSignaturePreview() {
+       const img = document.getElementById('doc-signature-preview');
+       if(!img || !sigPad) return;
+       
+       try {
+         // Failsafes if the canvas is empty/hidden
+         img.src = sigPad.toDataURL();
+         img.style.display = 'block';
+       } catch(e) {
+         console.warn("Could not generate signature image", e);
+       }
+    }
+
+    function initSignaturePad() {
+      sigPad = document.getElementById('signature-pad');
+      sigCtx = sigPad.getContext('2d');
+
+      const startDrawing = (e) => { if (signatureConfirmed) return; isDrawing = true; draw(e); };
+      const stopDrawing = () => {
+        isDrawing = false; sigCtx.beginPath();
+        updateSignaturePreview();
+      };
+      const draw = (e) => {
+        if (!isDrawing || signatureConfirmed) return;
+        let clientX, clientY;
+        if (e.type.includes('touch')) { e.preventDefault(); clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+        else { clientX = e.clientX; clientY = e.clientY; }
+
+        const rect = sigPad.getBoundingClientRect();
+        const x = clientX - rect.left; const y = clientY - rect.top;
+
+        sigCtx.lineWidth = 2.5; sigCtx.lineCap = 'round'; sigCtx.strokeStyle = '#0f172a';
+        sigCtx.lineTo(x, y); sigCtx.stroke(); sigCtx.beginPath(); sigCtx.moveTo(x, y);
+
+        if (signatureConfirmed) { signatureConfirmed = false; validateContract(); }
+        updateSignaturePreview();
+      };
+
+      sigPad.addEventListener('mousedown', startDrawing); sigPad.addEventListener('mousemove', draw);
+      sigPad.addEventListener('mouseup', stopDrawing); sigPad.addEventListener('mouseout', stopDrawing);
+      sigPad.addEventListener('touchstart', startDrawing, { passive: false });
+      sigPad.addEventListener('touchmove', draw, { passive: false });
+      sigPad.addEventListener('touchend', stopDrawing);
+    }
+
+    function resizeCanvas() {
+      const rect = sigPad.parentElement.getBoundingClientRect();
+      sigPad.width = rect.width; sigPad.height = rect.height;
+      sigCtx.fillStyle = "#f8fafc"; sigCtx.fillRect(0, 0, sigPad.width, sigPad.height);
+    }
+
+    function clearSignature() {
+      resizeCanvas(); signatureConfirmed = false;
+      document.getElementById('sig-overlay').classList.add('hidden');
+      document.getElementById('btn-confirm-sig').disabled = false;
+      updateSignaturePreview();
+      validateContract();
+    }
+
+    function confirmSignature() {
+      signatureConfirmed = true;
+      document.getElementById('sig-overlay').classList.remove('hidden');
+      document.getElementById('btn-confirm-sig').disabled = true;
+      updateSignaturePreview();
+      validateContract();
+    }
+
+    function updateSignaturePreview() {
+      const img = document.getElementById('doc-signature-preview');
+      img.src = sigPad.toDataURL();
+      img.style.display = 'block';
+    }
+
+    function validateContract() {
+      const n = document.getElementById('contract-name').value.trim();
+      const a = document.getElementById('contract-address').value.trim();
+      const p = document.getElementById('contract-phone').value.trim();
+      const e = document.getElementById('contract-email').value.trim();
+      const r = document.getElementById('contract-rep').value.trim();
+
+      const btn = document.getElementById('btn-sign-contract');
+      if (n && a && p && e && r && signatureConfirmed) btn.disabled = false;
+      else btn.disabled = true;
+    }
+
+    function signContract() {
+      const q = quotes.find(q => q.id === presentationQuoteId);
+      if (q) {
+        q.status = 'Signed';
+        q.homeowner = document.getElementById('contract-name').value;
+        q.address = document.getElementById('contract-address').value;
+        q.phone = document.getElementById('contract-phone').value;
+        q.email = document.getElementById('contract-email').value;
+        q.amountPaid = 0;
+
+        q.contractDetails = document.getElementById('contract-document-content').innerHTML;
+        localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+      }
+      switchView('jobs');
+    }
+
+    // --- Jobs Page Logic ---
+    function renderJobFilters() {
+      const container = document.getElementById('jobs-filters');
+      container.innerHTML = jobFilters.map(f => `
+        <button onclick="setJobFilter('${f}')" 
+                class="px-6 py-2.5 rounded-lg text-sm whitespace-nowrap transition-colors ${currentJobFilter === f ? 'bg-white shadow-sm font-extrabold text-gray-900' : 'text-on-surface-variant hover:text-gray-900 font-semibold'
+        }">
+          ${f}
+        </button>
+      `).join('');
+    }
+
+    function setJobFilter(filter) { currentJobFilter = filter; renderJobFilters(); renderJobs(); }
+
+    function updateJobStatus(id, newStatus) {
+      const q = quotes.find(q => q.id === id);
+      if (q) {
+        q.status = newStatus;
+        localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+        renderJobs();
+        renderDashboard();
+      }
+    }
+
+    function updateJobDate(id, newDate) {
+      const q = quotes.find(q => q.id === id);
+      if (q) {
+        q.scheduleDate = newDate;
+        localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+        renderJobs();
+      }
+    }
+
+    function updateJobPayment(id, val) {
+      const q = quotes.find(q => q.id === id);
+      if (q) {
+        q.amountPaid = parseFloat(val) || 0;
+        localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+        renderJobs();
+        renderDashboard();
+      }
+    }
+
+    function downloadContract(id) {
+      const q = quotes.find(q => q.id === id);
+      if (!q || !q.contractDetails) return;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`<html><head><title>Contract ${q.id}</title><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-10">${q.contractDetails}</body></html>`);
+      printWindow.document.close();
+      setTimeout(() => { printWindow.print(); }, 1000);
+    }
+
+    function renderJobs() {
+      const grid = document.getElementById('jobs-grid');
+      const emptyState = document.getElementById('jobs-empty');
+      const activeStatuses = ['Signed', 'Ordered', 'Scheduled', 'Finished'];
+
+      let filtered = quotes.filter(q => {
+        if (!activeStatuses.includes(q.status)) return false;
+        if (currentJobFilter !== 'All Jobs' && q.status !== currentJobFilter) return false;
+        return true;
+      });
+
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        grid.innerHTML = ''; emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        grid.innerHTML = filtered.map(job => {
+
+          let scheduleElement = '';
+          let dateWarning = '';
+
+          if(job.status === 'Scheduled') {
+            if (job.scheduleDate) {
+              const today = new Date();
+              today.setHours(0,0,0,0);
+              const schedParts = job.scheduleDate.split('-');
+              const sched = new Date(schedParts[0], schedParts[1] - 1, schedParts[2]); 
+              
+              if (sched < today) {
+                dateWarning = '<span class="text-error text-xs font-bold flex items-center gap-1 bg-red-50 px-2 py-1 rounded"><span class="material-symbols-outlined text-[14px]">warning</span> Overdue</span>';
+              } else if (sched.getTime() === today.getTime()) {
+                dateWarning = '<span class="text-blue-700 text-xs font-bold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded"><span class="material-symbols-outlined text-[14px]">event_available</span> Install Today</span>';
+              }
+            }
+            
+            scheduleElement = `
+              <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_month</span> Install Date</label>
+                  ${dateWarning}
+                </div>
+                <input type="date" value="${job.scheduleDate || ''}" onchange="updateJobDate('${job.id}', this.value)" class="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg px-4 py-3 shadow-sm focus:ring-2 focus:ring-primary text-sm font-bold">
+              </div>
+            `;
+          }
+
+          return `
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-highest flex flex-col justify-between relative">
+            
+            <button onclick="downloadContract('${job.id}')" class="absolute top-6 right-6 text-xs text-gray-400 hover:text-gray-700 transition-colors flex items-center gap-1" title="Download PDF">
+               <span class="material-symbols-outlined text-[18px]">download</span>
+            </button>
+            
+            <button onclick="openJobDeleteModal('${job.id}')" class="absolute top-6 right-14 text-xs text-error/60 hover:text-red-700 transition-colors flex items-center gap-1" title="Delete Job">
+               <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+
+            <div>
+              <div class="flex justify-between items-start mb-4 pr-16">
+                <div>
+                  <span class="text-xs font-bold text-on-surface-variant font-mono tracking-wider">${job.id}</span>
+                  <h4 class="font-headline font-extrabold text-2xl text-gray-900 mt-1">${job.homeowner}</h4>
+                  <p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> ${job.address || 'No Address'}</p>
+                </div>
+              </div>
+              
+              <div class="mt-4">
+                 <select onchange="updateJobStatus('${job.id}', this.value)" class="bg-white text-blue-700 font-extrabold text-xs uppercase tracking-widest rounded-full border-2 border-blue-700 focus:ring-2 focus:ring-blue-500 py-2 pl-4 pr-8 cursor-pointer shadow-sm hover:bg-blue-50 transition-colors appearance-none">
+                  <option value="Signed" ${job.status === 'Signed' ? 'selected' : ''}>Signed</option>
+                  <option value="Ordered" ${job.status === 'Ordered' ? 'selected' : ''}>Ordered</option>
+                  <option value="Scheduled" ${job.status === 'Scheduled' ? 'selected' : ''}>Scheduled</option>
+                  <option value="Finished" ${job.status === 'Finished' ? 'selected' : ''}>Finished</option>
+                </select>
+              </div>
+              
+              ${scheduleElement}
+
+              <div class="bg-gray-50 p-4 rounded-xl mb-4 mt-4 border border-gray-200">
+                 
+                 <div class="flex justify-between items-center mb-3">
+                   <div class="flex items-center gap-2">
+                     <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Amount Paid</span>
+                     <button onclick="updateJobPayment('${job.id}', ${job.total / 2})" class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase hover:bg-blue-200 transition-colors border border-blue-200">Half</button>
+                     <button onclick="updateJobPayment('${job.id}', ${job.total})" class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase hover:bg-green-200 transition-colors border border-green-200">Full</button>
+                   </div>
+                   <div class="relative w-28">
+                     <span class="absolute left-2 top-1.5 text-gray-500 font-bold text-sm">$</span>
+                     <input type="number" value="${(job.amountPaid || 0).toFixed(2)}" onchange="updateJobPayment('${job.id}', this.value)" class="w-full pl-6 pr-2 py-1.5 text-right rounded-lg border border-gray-300 shadow-sm focus:border-primary focus:ring-primary text-sm font-bold bg-white">
+                   </div>
+                 </div>
+                 
+                 <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                   <span class="text-sm font-bold text-gray-700">Balance:</span>
+                   <span class="text-error font-extrabold text-lg">${formatCurrency(job.total - (job.amountPaid || 0))}</span>
+                 </div>
+              </div>
+            </div>
+            
+            <div class="flex gap-3 pt-2">
+              <button onclick="openJobContractModal('${job.id}')" class="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-900 font-bold hover:bg-gray-200 transition-colors text-xs flex justify-center items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">description</span> Contract
+              </button>
+              <button onclick="openJobDetailsModal('${job.id}')" class="flex-1 py-2.5 rounded-lg bg-surface-container-highest text-gray-900 font-bold hover:bg-gray-300 transition-colors text-xs flex justify-center items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">inventory</span> Details
+              </button>
+            </div>
+          </div>
+        `}).join('');
+      }
+    }
+
+    // --- Modal Logic ---
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+
+    function openJobContractModal(id) {
+      const q = quotes.find(q => q.id === id);
+      if (!q || !q.contractDetails) { alert("Contract document not found for this job."); return; }
+
+      document.getElementById('modal-contract-body').innerHTML = q.contractDetails;
+      const modal = document.getElementById('modal-view-contract');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function openJobDetailsModal(id) {
+      const q = quotes.find(q => q.id === id);
+      if (!q) return;
+
+      const listContainer = document.getElementById('modal-job-glass-list');
+
+      let html = `<table class="w-full text-left border-collapse text-sm">
+        <thead class="bg-gray-100 text-gray-600 text-[10px] uppercase tracking-wider font-bold">
+          <tr><th class="p-3 border-b">Glass Description</th><th class="p-3 border-b text-center">Dimensions</th><th class="p-3 border-b text-center">Qty</th></tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">`;
+
+      q.items.forEach(item => {
+        const dimText = (item.w && item.h) ? `${item.w}" x ${item.h}"` : 'N/A';
+        html += `<tr><td class="p-3 font-medium text-gray-800">${item.description}</td><td class="p-3 text-center text-gray-500">${dimText}</td><td class="p-3 text-center font-bold text-gray-900">${item.qty}</td></tr>`;
+      });
+      html += `</tbody></table>`;
+
+      listContainer.innerHTML = html;
+      document.getElementById('mj-total').innerText = formatCurrency(q.total);
+      document.getElementById('mj-paid').innerText = formatCurrency(q.amountPaid || 0);
+      document.getElementById('mj-balance').innerText = formatCurrency(q.total - (q.amountPaid || 0));
+
+      const modal = document.getElementById('modal-job-details');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+	let jobToDeleteId = null;
+	
+	function openJobDeleteModal(id) {
+	  jobToDeleteId = id;
+	  document.getElementById('delete-job-id-display').innerText = id;
+	  document.getElementById('delete-job-input').value = '';
+	  document.getElementById('btn-confirm-delete-job').disabled = true;
+	  
+	  const modal = document.getElementById('modal-delete-job');
+	  modal.classList.remove('hidden');
+	  modal.classList.add('flex');
+	}
+	
+	function validateJobDelete() {
+	  const input = document.getElementById('delete-job-input').value.trim();
+	  const btn = document.getElementById('btn-confirm-delete-job');
+	  btn.disabled = input !== jobToDeleteId;
+	}
+	
+	function executeJobDelete() {
+	  if(!jobToDeleteId) return;
+	  quotes = quotes.filter(q => q.id !== jobToDeleteId);
+	  localStorage.setItem('ox_glass_quotes', JSON.stringify(quotes));
+	  closeModal('modal-delete-job');
+	  renderJobs();
+	}
+
+    // Run
+    init();
+  </script>
+</body>
+
+</html>
